@@ -3,79 +3,540 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EIFS Data Grid</title>
+  <title>EIFS Voice Data Grid</title>
   <style>
     :root {
-      --bg: #f4efe6;
-      --ink: #1f2a2e;
-      --card: #fffdf8;
-      --accent: #c85d2f;
-      --accent-2: #1f7a8c;
+      --bg1: #f0efe8;
+      --bg2: #d8e6e9;
+      --ink: #1d2d35;
+      --card: #fffefb;
+      --line: rgba(29, 45, 53, 0.15);
+      --accent: #16697a;
+      --warn: #b5651d;
+      --ok: #2e7d32;
+      --focus: #0f5c6d;
     }
 
     * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      min-height: 100vh;
-      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
       color: var(--ink);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
       background:
-        radial-gradient(circle at 10% 20%, rgba(200, 93, 47, 0.18), transparent 35%),
-        radial-gradient(circle at 85% 0%, rgba(31, 122, 140, 0.2), transparent 30%),
-        var(--bg);
-      display: grid;
-      place-items: center;
-      padding: 24px;
+        radial-gradient(circle at 15% 0%, rgba(22, 105, 122, 0.18), transparent 45%),
+        radial-gradient(circle at 85% 20%, rgba(181, 101, 29, 0.12), transparent 40%),
+        linear-gradient(160deg, var(--bg1), var(--bg2));
+      min-height: 100vh;
+      padding: 20px;
     }
 
-    .card {
-      width: min(760px, 100%);
+    .shell {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: grid;
+      gap: 16px;
+    }
+
+    .panel {
       background: var(--card);
-      border: 2px solid rgba(31, 42, 46, 0.15);
-      border-radius: 18px;
-      padding: 28px;
-      box-shadow: 0 14px 40px rgba(31, 42, 46, 0.15);
-      animation: rise 560ms ease-out;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 8px 30px rgba(29, 45, 53, 0.08);
     }
 
     h1 {
-      margin: 0 0 12px;
+      margin: 0;
+      font-size: clamp(1.4rem, 2.5vw, 2rem);
       letter-spacing: 0.02em;
-      font-size: clamp(1.8rem, 4vw, 2.8rem);
     }
 
-    p {
-      margin: 0 0 16px;
-      font-size: 1.05rem;
-      line-height: 1.55;
+    .lead {
+      margin: 10px 0 0;
+      line-height: 1.5;
     }
 
-    .pill {
-      display: inline-block;
-      margin-right: 10px;
-      margin-top: 8px;
-      padding: 8px 12px;
-      border-radius: 999px;
+    .top-grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      margin-top: 14px;
+    }
+
+    .field {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px;
+      background: #ffffff;
+    }
+
+    .field .name {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #4f5f67;
+      margin-bottom: 6px;
+    }
+
+    .field .value {
+      min-height: 24px;
       font-weight: 600;
-      font-size: 0.9rem;
-      color: #ffffff;
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      word-break: break-word;
     }
 
-    @keyframes rise {
-      from { transform: translateY(12px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
+    .field.active {
+      border-color: var(--focus);
+      box-shadow: 0 0 0 2px rgba(15, 92, 109, 0.15);
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      background: var(--accent);
+      color: #fff;
+    }
+
+    button.alt {
+      background: #5e6d75;
+    }
+
+    button.warn {
+      background: var(--warn);
+    }
+
+    .status {
+      margin-top: 10px;
+      font-weight: 700;
+    }
+
+    .status.ok { color: var(--ok); }
+    .status.warn { color: var(--warn); }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      background: #fff;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px;
+      vertical-align: top;
+      text-align: left;
+    }
+
+    th {
+      background: #d5ece7;
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    tr.active-row {
+      background: rgba(22, 105, 122, 0.08);
+    }
+
+    .hint {
+      font-size: 0.9rem;
+      line-height: 1.45;
+      margin: 0;
+    }
+
+    .log {
+      margin-top: 10px;
+      max-height: 220px;
+      overflow: auto;
+      border: 1px dashed var(--line);
+      padding: 10px;
+      background: #fdfdfc;
+      font-size: 0.95rem;
+    }
+
+    .log div + div {
+      margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px dashed rgba(29, 45, 53, 0.1);
     }
   </style>
 </head>
 <body>
-  <main class="card">
-    <h1>EIFS Data Grid</h1>
-    <p>This repository is connected to GitHub and ready for deployment on Render.</p>
-    <p>Next step: create a Static Site on Render from this repository and deploy branch <strong>main</strong>.</p>
-    <span class="pill">GitHub Connected</span>
-    <span class="pill">Render Ready</span>
+  <main class="shell">
+    <section class="panel">
+      <h1>EIFS Voice Data Grid Tool</h1>
+      <p class="lead">Voice only workflow: speak commands and export directly into Data grid template.docx.</p>
+
+      <div class="top-grid" id="metaFields"></div>
+
+      <div class="actions">
+        <button id="startBtn">Start Voice Mode</button>
+        <button class="alt" id="stopBtn">Stop Voice Mode</button>
+        <button class="warn" id="saveBtn">Save Document</button>
+      </div>
+
+      <div class="status warn" id="status">Microphone idle.</div>
+    </section>
+
+    <section class="panel">
+      <h2>Grid Rows</h2>
+      <p class="hint">Current row is highlighted. Say add row, next row, previous row, or field commands like grid letter A, probe 22, substrate F.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Grid Letter</th>
+            <th>Grid Number</th>
+            <th>Probe</th>
+            <th>Substrate</th>
+            <th>Comments</th>
+          </tr>
+        </thead>
+        <tbody id="rowsBody"></tbody>
+      </table>
+    </section>
+
+    <section class="panel">
+      <h2>Voice Commands</h2>
+      <p class="hint">document name ... | date ... | photograph ... | client ... | elevation ... | grid letter ... | grid number ... | probe ... | substrate ... | comment ... | add row | next row | previous row | go back | go forward | delete word | clear field | save document</p>
+      <div class="log" id="log"></div>
+    </section>
   </main>
+
+  <script>
+    const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    const state = {
+      document_name: "Data grid output",
+      date: "",
+      photograph: "",
+      client: "",
+      elevation: "",
+      rows: [{ grid_letter: "", grid_number: "", probe: "", substrate: "", comments: "" }],
+      activeRow: 0,
+      activeField: "date",
+      listening: false,
+    };
+
+    const metaDefs = [
+      ["document_name", "Document Name"],
+      ["date", "Date"],
+      ["photograph", "Photograph #"],
+      ["client", "Client"],
+      ["elevation", "Elevation"],
+    ];
+
+    const fieldOrder = [
+      "date",
+      "photograph",
+      "client",
+      "elevation",
+      "grid_letter",
+      "grid_number",
+      "probe",
+      "substrate",
+      "comments",
+    ];
+
+    const letterPattern = /^(?:[A-R]|[A-R]-[A-R])$/;
+    const numberPattern = /^(?:[1-9]|1[0-4]|(?:[1-9]|1[0-4])-(?:[1-9]|1[0-4]))$/;
+
+    const statusEl = document.getElementById("status");
+    const metaEl = document.getElementById("metaFields");
+    const rowsBody = document.getElementById("rowsBody");
+    const logEl = document.getElementById("log");
+
+    function log(msg) {
+      const line = document.createElement("div");
+      line.textContent = msg;
+      logEl.prepend(line);
+    }
+
+    function normalizeSpaces(value) {
+      return value.replace(/\s+/g, " ").trim();
+    }
+
+    function activeRow() {
+      return state.rows[state.activeRow];
+    }
+
+    function addRow() {
+      state.rows.push({ grid_letter: "", grid_number: "", probe: "", substrate: "", comments: "" });
+      state.activeRow = state.rows.length - 1;
+      render();
+      log(`Added row ${state.activeRow + 1}`);
+    }
+
+    function nextRow() {
+      if (state.activeRow < state.rows.length - 1) {
+        state.activeRow += 1;
+      }
+      render();
+      log(`Active row ${state.activeRow + 1}`);
+    }
+
+    function prevRow() {
+      if (state.activeRow > 0) {
+        state.activeRow -= 1;
+      }
+      render();
+      log(`Active row ${state.activeRow + 1}`);
+    }
+
+    function setField(field, value) {
+      value = normalizeSpaces(value);
+      if (!value && field !== "comments") return;
+
+      if (["date", "photograph", "client", "elevation", "document_name"].includes(field)) {
+        state[field] = value;
+        state.activeField = field;
+        render();
+        return;
+      }
+
+      const row = activeRow();
+      if (field === "grid_letter") {
+        value = value.toUpperCase().replace(/\s+/g, "");
+        if (!letterPattern.test(value)) {
+          log("Invalid grid letter. Use A through R, or A-C format.");
+          return;
+        }
+      }
+      if (field === "grid_number") {
+        value = value.replace(/\s+/g, "");
+        if (!numberPattern.test(value)) {
+          log("Invalid grid number. Use 1-14 or 1-14 format.");
+          return;
+        }
+      }
+      if (field === "probe") {
+        const n = Number(value.replace(/[^0-9]/g, ""));
+        if (!Number.isInteger(n) || n < 10 || n > 40) {
+          log("Invalid probe. Use whole numbers 10 to 40.");
+          return;
+        }
+        value = String(n);
+      }
+      if (field === "substrate") {
+        value = value.toUpperCase().replace(/\s+/g, "");
+        if (!["F", "M", "S"].includes(value)) {
+          log("Invalid substrate. Use F, M, or S.");
+          return;
+        }
+      }
+
+      row[field] = value;
+      state.activeField = field;
+      render();
+    }
+
+    function deleteWord() {
+      const field = state.activeField;
+      if (["date", "photograph", "client", "elevation", "document_name"].includes(field)) {
+        state[field] = normalizeSpaces(state[field].split(" ").slice(0, -1).join(" "));
+      } else {
+        const row = activeRow();
+        row[field] = normalizeSpaces((row[field] || "").split(" ").slice(0, -1).join(" "));
+      }
+      render();
+    }
+
+    function clearField() {
+      const field = state.activeField;
+      if (["date", "photograph", "client", "elevation", "document_name"].includes(field)) {
+        state[field] = "";
+      } else {
+        activeRow()[field] = "";
+      }
+      render();
+    }
+
+    function stepField(direction) {
+      const idx = fieldOrder.indexOf(state.activeField);
+      const next = Math.max(0, Math.min(fieldOrder.length - 1, idx + direction));
+      state.activeField = fieldOrder[next];
+      render();
+      log(`Active field ${state.activeField.replace("_", " ")}`);
+    }
+
+    function render() {
+      metaEl.innerHTML = "";
+      metaDefs.forEach(([key, label]) => {
+        const box = document.createElement("div");
+        box.className = "field" + (state.activeField === key ? " active" : "");
+        box.innerHTML = `<div class="name">${label}</div><div class="value">${state[key] || "(empty)"}</div>`;
+        metaEl.appendChild(box);
+      });
+
+      rowsBody.innerHTML = "";
+      state.rows.forEach((row, idx) => {
+        const tr = document.createElement("tr");
+        if (idx === state.activeRow) tr.classList.add("active-row");
+
+        const fields = ["grid_letter", "grid_number", "probe", "substrate", "comments"];
+        fields.forEach((field) => {
+          const td = document.createElement("td");
+          const active = state.activeField === field && idx === state.activeRow;
+          td.className = active ? "field active" : "";
+          td.textContent = row[field] || "";
+          tr.appendChild(td);
+        });
+
+        rowsBody.appendChild(tr);
+      });
+    }
+
+    async function saveDocument() {
+      const payload = {
+        document_name: state.document_name || "Data grid output",
+        date: state.date,
+        photograph: state.photograph,
+        client: state.client,
+        elevation: state.elevation,
+        rows: state.rows,
+      };
+
+      statusEl.textContent = "Saving document...";
+      statusEl.className = "status warn";
+
+      try {
+        const response = await fetch("/api/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.detail || "Save failed.");
+        }
+
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = `${payload.document_name || "Data grid output"}.docx`;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        URL.revokeObjectURL(url);
+
+        statusEl.textContent = "Document saved and downloaded.";
+        statusEl.className = "status ok";
+      } catch (err) {
+        statusEl.textContent = `Save error: ${err.message}`;
+        statusEl.className = "status warn";
+      }
+    }
+
+    function handleCommand(raw) {
+      const text = raw.trim();
+      const lower = text.toLowerCase();
+      log(`Heard: ${text}`);
+
+      if (lower === "add row" || lower === "new row") return addRow();
+      if (lower === "next row") return nextRow();
+      if (lower === "previous row") return prevRow();
+      if (lower === "go back") return stepField(-1);
+      if (lower === "go forward") return stepField(1);
+      if (lower === "delete word") return deleteWord();
+      if (lower === "clear field") return clearField();
+      if (lower === "save document" || lower === "export document") return saveDocument();
+
+      const patterns = [
+        [/^document name\s+(.+)$/i, (v) => setField("document_name", v)],
+        [/^date\s+(.+)$/i, (v) => setField("date", v)],
+        [/^(?:photograph|photo number|photo)\s+(.+)$/i, (v) => setField("photograph", v)],
+        [/^client\s+(.+)$/i, (v) => setField("client", v)],
+        [/^elevation\s+(.+)$/i, (v) => setField("elevation", v)],
+        [/^grid letter\s+(.+)$/i, (v) => setField("grid_letter", v)],
+        [/^(?:grid number|grid no)\s+(.+)$/i, (v) => setField("grid_number", v)],
+        [/^probe\s+(.+)$/i, (v) => setField("probe", v)],
+        [/^substrate\s+(.+)$/i, (v) => setField("substrate", v)],
+        [/^comment\s+(.+)$/i, (v) => setField("comments", v)],
+      ];
+
+      for (const [regex, action] of patterns) {
+        const match = text.match(regex);
+        if (match) {
+          action(match[1]);
+          return;
+        }
+      }
+
+      log("No command matched.");
+    }
+
+    let recognition = null;
+
+    function startVoiceMode() {
+      if (!Recognition) {
+        statusEl.textContent = "Speech recognition is not supported in this browser.";
+        statusEl.className = "status warn";
+        return;
+      }
+
+      if (!recognition) {
+        recognition = new Recognition();
+        recognition.lang = "en-US";
+        recognition.continuous = true;
+        recognition.interimResults = false;
+
+        recognition.onstart = () => {
+          state.listening = true;
+          statusEl.textContent = "Listening for commands...";
+          statusEl.className = "status ok";
+        };
+
+        recognition.onend = () => {
+          if (state.listening) {
+            recognition.start();
+            return;
+          }
+          statusEl.textContent = "Microphone idle.";
+          statusEl.className = "status warn";
+        };
+
+        recognition.onerror = (event) => {
+          statusEl.textContent = `Speech error: ${event.error}`;
+          statusEl.className = "status warn";
+        };
+
+        recognition.onresult = (event) => {
+          for (let i = event.resultIndex; i < event.results.length; i += 1) {
+            if (event.results[i].isFinal) {
+              handleCommand(event.results[i][0].transcript);
+            }
+          }
+        };
+      }
+
+      state.listening = true;
+      recognition.start();
+    }
+
+    function stopVoiceMode() {
+      state.listening = false;
+      if (recognition) recognition.stop();
+      statusEl.textContent = "Microphone idle.";
+      statusEl.className = "status warn";
+    }
+
+    document.getElementById("startBtn").addEventListener("click", startVoiceMode);
+    document.getElementById("stopBtn").addEventListener("click", stopVoiceMode);
+    document.getElementById("saveBtn").addEventListener("click", saveDocument);
+
+    render();
+  </script>
 </body>
 </html>
