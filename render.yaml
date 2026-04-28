@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: eifs-data-grid
+    env: static
+    branch: main
+    staticPublishPath: .

@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EIFS Data Grid</title>
+  <style>
+    :root {
+      --bg: #f4efe6;
+      --ink: #1f2a2e;
+      --card: #fffdf8;
+      --accent: #c85d2f;
+      --accent-2: #1f7a8c;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 10% 20%, rgba(200, 93, 47, 0.18), transparent 35%),
+        radial-gradient(circle at 85% 0%, rgba(31, 122, 140, 0.2), transparent 30%),
+        var(--bg);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .card {
+      width: min(760px, 100%);
+      background: var(--card);
+      border: 2px solid rgba(31, 42, 46, 0.15);
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: 0 14px 40px rgba(31, 42, 46, 0.15);
+      animation: rise 560ms ease-out;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      letter-spacing: 0.02em;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+    }
+
+    p {
+      margin: 0 0 16px;
+      font-size: 1.05rem;
+      line-height: 1.55;
+    }
+
+    .pill {
+      display: inline-block;
+      margin-right: 10px;
+      margin-top: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #ffffff;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    }
+
+    @keyframes rise {
+      from { transform: translateY(12px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>EIFS Data Grid</h1>
+    <p>This repository is connected to GitHub and ready for deployment on Render.</p>
+    <p>Next step: create a Static Site on Render from this repository and deploy branch <strong>main</strong>.</p>
+    <span class="pill">GitHub Connected</span>
+    <span class="pill">Render Ready</span>
+  </main>
+</body>
+</html>
